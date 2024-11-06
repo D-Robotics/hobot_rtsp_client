@@ -101,11 +101,11 @@ H265Sink::H265Sink(UsageEnvironment &env, MediaSubsession &subsession,
     memset(pps_data_, 0, 128);
   }
 
-  sei_data_ = new char[128];
+  sei_data_ = new char[4096];
   sei_len_ = 0;
   if (sei_data_ == NULL) {
   } else {
-    memset(sei_data_, 0, 128);
+    memset(sei_data_, 0, 4096);
   }
 
   parseSDPLine();
@@ -169,6 +169,7 @@ void H265Sink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
 
   if (!buff_manager_) return;
   // unsigned char start_code[4] = {0x00, 0x00, 0x00, 0x01};
+
   waiting_ = isNeedToWait(frameSize);
   if (waiting_) {
     if (!first_frame_) {
@@ -180,41 +181,112 @@ void H265Sink::afterGettingFrame(unsigned frameSize, unsigned numTruncatedBytes,
   }
 
   if (first_frame_) {
-    memcpy(frame_ptr_->buff, video_buffer_, data_len_);
-    frame_ptr_->data_size = data_len_;
-    frame_ptr_->frame_id = frame_count_;
-    frame_ptr_->format = "h265";
-    frame_ptr_->pts.tv_sec = presentationTime.tv_sec;
-    frame_ptr_->pts.tv_nsec = presentationTime.tv_usec*1000;
-    frame_ptr_->dts.tv_sec = presentationTime.tv_sec;
-    frame_ptr_->dts.tv_nsec = presentationTime.tv_usec*1000;
-    buff_manager_->Input(frame_ptr_);
-
-    if (save_file_) {
-      SaveToFile(video_buffer_, data_len_);
+    u_int8_t *buffer = (u_int8_t*)video_buffer_;
+    int nNaltype = 0;
+    nNaltype = (buffer[4] & 0x7E) >> 1;
+    if ((nNaltype == 19) || (nNaltype == 20)) {
+      if (frame_ptr_ == nullptr) {
+        frame_ptr_ = buff_manager_->GetBuffDef();
+      }   
+      data_len_ = 0;
+      memcpy(frame_ptr_->buff, vps_data_, vps_len_);
+      data_len_ += vps_len_;
+      memcpy(frame_ptr_->buff + data_len_, sps_data_, sps_len_);
+      data_len_ += sps_len_;
+      memcpy(frame_ptr_->buff + data_len_, pps_data_, pps_len_);
+      data_len_ += pps_len_;
+      if (sei_len_ != 0) {
+        memcpy(frame_ptr_->buff + data_len_, sei_data_, sei_len_);
+        data_len_ += sei_len_;
+      } 
+      memcpy(frame_ptr_->buff + data_len_, video_buffer_, frameSize + 4);
+      data_len_ += frameSize + 4;
+      frame_ptr_->data_size = data_len_;
+      frame_ptr_->frame_id = frame_count_;
+      frame_ptr_->format = "h265";
+      frame_ptr_->pts.tv_sec = presentationTime.tv_sec;
+      frame_ptr_->pts.tv_nsec = presentationTime.tv_usec*1000;
+      frame_ptr_->dts.tv_sec = presentationTime.tv_sec;
+      frame_ptr_->dts.tv_nsec = presentationTime.tv_usec*1000;
+      int ret = buff_manager_->Input(frame_ptr_);
+      if (save_file_) {
+        SaveToFile(frame_ptr_->buff, data_len_);
+      }
+      frame_ptr_ = nullptr;
+      if (ret != 0) {
+        LOGE << "HB_VDEC_SendStream failed.";
+      }
+      first_frame_ = false;
     }
     data_len_ = 0;
     frame_count_++;
-    first_frame_ = false;
     continuePlaying();
     return;
   }
 
-  if (frame_ptr_) {
-    frame_ptr_->data_size = frameSize + 4;
-    frame_ptr_->frame_id = frame_count_;
-    frame_ptr_->format = "h265";
-    frame_ptr_->pts.tv_sec = presentationTime.tv_sec;
-    frame_ptr_->pts.tv_nsec = presentationTime.tv_usec*1000;
-    frame_ptr_->dts.tv_sec = presentationTime.tv_sec;
-    frame_ptr_->dts.tv_nsec = presentationTime.tv_usec*1000;
-    buff_manager_->Input(frame_ptr_);
-    if (save_file_) {
-      SaveToFile(frame_ptr_->buff, frameSize + 4);
-    }
-    frame_ptr_ = nullptr;
+  u_int8_t *buffer = (u_int8_t*)video_buffer_;
+  int nNaltype = 0;
+  nNaltype = (buffer[4] & 0x7E) >> 1;
+  if ((nNaltype == 0) || (nNaltype == 1) || (nNaltype == 2) || (nNaltype == 3) ||
+      (nNaltype == 4) || (nNaltype == 5) || (nNaltype == 6) || (nNaltype == 7) ||
+      (nNaltype == 8) || (nNaltype == 9) || (nNaltype == 19) || (nNaltype == 20) ||
+      (nNaltype == 32)) {
+    if ((nNaltype == 19) || (nNaltype == 20)) {
+      if (frame_ptr_ == nullptr) {
+        frame_ptr_ = buff_manager_->GetBuffDef();
+      }    
+      data_len_ = 0;
+      memcpy(frame_ptr_->buff, vps_data_, vps_len_);
+      data_len_ += vps_len_;
+      memcpy(frame_ptr_->buff + data_len_, sps_data_, sps_len_);
+      data_len_ += sps_len_;
+      memcpy(frame_ptr_->buff + data_len_, pps_data_, pps_len_);
+      data_len_ += pps_len_;
+      if (sei_len_ != 0) {
+        memcpy(frame_ptr_->buff + data_len_, sei_data_, sei_len_);
+        data_len_ += sei_len_;
+      } 
+      memcpy(frame_ptr_->buff + data_len_, video_buffer_, frameSize + 4);
+      data_len_ += frameSize + 4;
 
-  } 
+      frame_ptr_->data_size = data_len_;
+      frame_ptr_->frame_id = frame_count_;
+      frame_ptr_->format = "h265";
+      frame_ptr_->pts.tv_sec = presentationTime.tv_sec;
+      frame_ptr_->pts.tv_nsec = presentationTime.tv_usec*1000;
+      frame_ptr_->dts.tv_sec = presentationTime.tv_sec;
+      frame_ptr_->dts.tv_nsec = presentationTime.tv_usec*1000;
+      int ret = buff_manager_->Input(frame_ptr_);
+      if (save_file_) {
+        SaveToFile(frame_ptr_->buff, data_len_);
+      }
+      frame_ptr_ = nullptr;
+      if (ret != 0) {
+        LOGE << "HB_VDEC_SendStream failed.";
+      }
+    } else if ((nNaltype == 32)&& (frameSize < 64)) {
+    } else {
+      if (frame_ptr_ == nullptr) {
+        frame_ptr_ = buff_manager_->GetBuffDef();
+      }    
+      memcpy(frame_ptr_->buff, video_buffer_, frameSize + 4);
+      frame_ptr_->data_size = frameSize + 4;
+      frame_ptr_->frame_id = frame_count_;
+      frame_ptr_->format = "h265";
+      frame_ptr_->pts.tv_sec = presentationTime.tv_sec;
+      frame_ptr_->pts.tv_nsec = presentationTime.tv_usec*1000;
+      frame_ptr_->dts.tv_sec = presentationTime.tv_sec;
+      frame_ptr_->dts.tv_nsec = presentationTime.tv_usec*1000;
+      int ret = buff_manager_->Input(frame_ptr_);
+      if (save_file_) {
+        SaveToFile(frame_ptr_->buff, data_len_);
+      }
+      frame_ptr_ = nullptr;
+      if (ret != 0) {
+        LOGE << "HB_VDEC_SendStream failed.";
+      }
+    }
+  }
 
   frame_count_++;
   // Then continue, to request the next frame of data:
@@ -225,12 +297,8 @@ void H265Sink::AddBufManager(std::shared_ptr<rtsp_client::BufferManager> buff_ma
   buff_manager_ = buff_manager;
 }
 
-#if 1
 Boolean H265Sink::isNeedToWait(unsigned frameSize) {
-  if (frame_ptr_ == nullptr) {
-    frame_ptr_ = buff_manager_->GetBuffDef();
-  }
-  u_int8_t *buffer = (u_int8_t *)frame_ptr_->buff;
+  u_int8_t *buffer = (u_int8_t*)video_buffer_;
   int nNalType = 0;
   nNalType = (buffer[4] & 0x7E) >> 1;
   if (!first_frame_) {
@@ -253,25 +321,11 @@ Boolean H265Sink::isNeedToWait(unsigned frameSize) {
   } else if (nNalType == 39) {
     sei_len_ = frameSize + 4;
     memcpy(sei_data_, buffer, sei_len_);
-  } else if (nNalType == 19) {
+  } else if ((nNalType == 19) || (nNalType == 20)) {
+    LOGW << "channel:" << channel_ << " recv stream nal type:" << nNalType;
     if ((recv_sps_ && recv_pps_ && recv_vps_) ||  // get sps pps from rtp packet
         (sps_len_ != 0 && pps_len_ != 0 &&
          vps_len_ != 0)) {  // get sps pps from sdp
-      data_len_ = 0;
-      memcpy(video_buffer_, vps_data_, vps_len_);
-      data_len_ += vps_len_;
-      memcpy(video_buffer_ + data_len_, sps_data_, sps_len_);
-      data_len_ += sps_len_;
-      memcpy(video_buffer_ + data_len_, pps_data_, pps_len_);
-      data_len_ += pps_len_;
-      if (sei_len_ != 0) {
-        memcpy(video_buffer_ + data_len_, sei_data_, sei_len_);
-        data_len_ += sei_len_;
-      }
-
-      memcpy(video_buffer_ + data_len_, buffer, frameSize + 4);
-      data_len_ += frameSize + 4;
-
       int width = 0;
       int height = 0;
       vision::SPSInfoMgr::GetInstance().AnalyticsSps(
@@ -292,15 +346,12 @@ Boolean H265Sink::isNeedToWait(unsigned frameSize) {
 Boolean H265Sink::continuePlaying() {
   if (fSource == NULL) return False;  // sanity check (should not happen)
   static unsigned char start_code[4] = {0x00, 0x00, 0x00, 0x01};
-  if (frame_ptr_ == nullptr) {
-    frame_ptr_ = buff_manager_->GetBuffDef();
-  }
-  u_int8_t *buffer = (u_int8_t *)frame_ptr_->buff;
+  u_int8_t *buffer = (u_int8_t *)video_buffer_;
   // Request the next frame of data from our input source. "afterGettingFrame()"
   // will get called later, when it arrives:
   memcpy(reinterpret_cast<void *>(buffer), start_code, 4);
   buffer += 4;
-  fSource->getNextFrame(buffer, buffer_size_, afterGettingFrame, this,
+  fSource->getNextFrame(buffer, buffer_size_-4, afterGettingFrame, this,
                         onSourceClosure, this);
   return True;
 }
@@ -363,104 +414,3 @@ void H265Sink::parseSDPLine() {
 #endif
 }
 
-#else
-Boolean H265Sink::isNeedToWait(unsigned frameSize) {
-  if (first_frame_) {
-    LOGW << "channel:" << channel_ << " recv stream";
-    int nNal1 = 0;
-    nNal1 = (video_buffer_[4] & 0x7E) >> 1;
-    if (nNal1 != 32) {  // not vps
-      data_len_ = 0;
-      return true;
-    }
-    if (data_len_ == 4) {  // first nal
-      LOGW << "channle:" << channel_
-           << ", first frame recv h265 nal1 type:" << nNal1
-           << " frame size:" << frameSize;
-      data_len_ += frameSize;
-      vps_len_ = data_len_;
-      LOGW << "channle:" << channel_ << "vps len:" << vps_len_;
-      return true;
-    }
-
-    int nNal2 = 0;
-    char *buffer = video_buffer_ + vps_len_;
-    nNal2 = (buffer[4] & 0x7E) >> 1;
-    if (nNal2 != 33) {  // sps
-      data_len_ = 0;
-      vps_len_ = 0;
-      sps_len_ = 0;
-      return true;
-    }
-
-    if (sps_len_ == 0 && vps_len_ > 0) {
-      LOGW << "channle:" << channel_
-           << ", first frame recv h265 nal2 type:" << nNal2
-           << " framesize:" << frameSize;
-      int width = 0;
-      int height = 0;
-      vision::SPSInfoMgr::GetInstance().AnalyticsSps(
-          (unsigned char *)video_buffer_ + data_len_, frameSize, width, height,
-          "H265");
-      pipe_line_->SetDecodeResolution(width, height);
-      pipe_line_->Init();
-      pipe_line_->Start();
-      data_len_ += frameSize;
-      sps_len_ = data_len_;
-      LOGW << "channle:" << channel_ << "sps len:" << sps_len_;
-      return true;
-    }
-
-    buffer = video_buffer_ + sps_len_;
-    int nal_type = (buffer[4] & 0x7E) >> 1;
-    data_len_ += frameSize;
-    LOGW << "channle:" << channel_
-         << ", first frame recv h265 nal3 type:" << nal_type;
-    if (nal_type == 34) {  // pps
-      return false;
-    } else {
-      data_len_ = 0;
-      vps_len_ = 0;
-      sps_len_ = 0;
-      return true;
-    }
-  }
-  u_int8_t *buffer =
-      buffers_vir_ + (frame_count_ % buffer_count_) * buffer_size_;
-  int nNalUnitType = 0;
-  nNalUnitType = (buffer[4] & 0x7E) >> 1;
-  if (nNalUnitType == 32) {
-    first_frame_ = true;
-    data_len_ = 4;
-    data_len_ += frameSize;
-    vps_len_ = data_len_;
-    memcpy(video_buffer_, buffer, data_len_);
-    return true;
-  }
-  return false;
-}
-
-Boolean H265Sink::continuePlaying() {
-  if (fSource == NULL) return False;  // sanity check (should not happen)
-  static unsigned char start_code[4] = {0x00, 0x00, 0x00, 0x01};
-  if (first_frame_) {
-    memcpy(video_buffer_ + data_len_, start_code, 4);
-    data_len_ += 4;
-    fSource->getNextFrame((unsigned char *)video_buffer_ + data_len_,
-                          buffer_len_ - data_len_, afterGettingFrame, this,
-                          onSourceClosure, this);
-    return True;
-  }
-
-  u_int8_t *buffer =
-      buffers_vir_ + (frame_count_ % buffer_count_) * buffer_size_;
-  // Request the next frame of data from our input source. "afterGettingFrame()"
-  // will get called later, when it arrives:
-  memcpy(reinterpret_cast<void *>(buffer), start_code, 4);
-  buffer += 4;
-
-  fSource->getNextFrame(buffer, buffer_size_, afterGettingFrame, this,
-                        onSourceClosure, this);
-  return True;
-}
-#endif

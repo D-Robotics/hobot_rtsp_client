@@ -81,8 +81,6 @@ class H264Sink : public MediaSink {
   MediaSubsession &subsession_;
   int buffer_size_;
   int buffer_count_;
-  u_int8_t *buffers_vir_;
-  uint64_t buffers_pyh_;
 
   char *stream_id_;
   std::string file_name_;

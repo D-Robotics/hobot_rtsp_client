@@ -77,6 +77,20 @@ def generate_launch_description():
             'codec_pub_topic': '/image_mjpeg'
         }.items()
     )
+
+    # mono2d body detection
+    mono2d_body_det_node = Node(
+        package='mono2d_body_detection',
+        executable='mono2d_body_detection',
+        output='screen',
+        parameters=[
+            {"ai_msg_pub_topic_name": "/hobot_mono2d_body_detection"},
+            {"sharedmem_img_topic_name": "/image_decode"},
+            {"is_shared_mem_sub": 1}
+        ],
+        arguments=['--ros-args', '--log-level', 'warn']
+    )
+
     # web
     web_node = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -85,7 +99,7 @@ def generate_launch_description():
                 'launch/websocket.launch.py')),
         launch_arguments={
             'websocket_image_topic': '/image_mjpeg',
-            'websocket_only_show_image': 'True'
+            'websocket_smart_topic': "/hobot_mono2d_body_detection"
         }.items()
     )
 
@@ -101,6 +115,7 @@ def generate_launch_description():
         rtsp_node,
         h264_codec_node,
         jpeg_codec_node,
+        mono2d_body_det_node,
         web_node
         # image codec
     ])
