@@ -19,6 +19,7 @@
   <depend>yaml_cpp_vendor</depend>
   <!-- Only required for MJPEG to RGB converison -->
   <depend>ffmpeg</depend>
+  <depend>rclcpp_components</depend>
   <member_of_group>rosidl_interface_packages</member_of_group>
   
   <test_depend>ament_lint_auto</test_depend>
