@@ -18,6 +18,13 @@ sudo apt install -y tros-humble-hobot-rtsp-client
 ```
 
 ## 启动码流
+系统配置成性能模式
+```bash
+sudo bash -c "echo performance > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor"
+```
+
+ion_size配置成1G，请参考[srpi-config配置](https://developer.d-robotics.cc/rdk_doc/System_configuration/srpi-config)
+
 预先准备IPC的RTSP的数据源；
 
 或者启动RDK系统的RTSP推流示例，参考[流媒体](https://developer.d-robotics.cc/rdk_doc/Basic_Application/multi_media/pydev_vio_demo)

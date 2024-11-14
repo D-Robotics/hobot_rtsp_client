@@ -37,6 +37,7 @@ ament_auto_find_build_dependencies()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(img_msgs REQUIRED)
+find_package(rclcpp_components REQUIRED)
 
 
 include_directories("include"
@@ -60,8 +61,8 @@ set(LIVE_LIBRARIES
   UsageEnvironment
 )
 
-
-add_executable(${PROJECT_NAME}
+# build component
+add_library(${PROJECT_NAME}_component SHARED
   src/rtspclient/AudioG711Sink.cpp
   src/rtspclient/Base64.cpp
   src/rtspclient/H264Sink.cpp
@@ -75,15 +76,34 @@ add_executable(${PROJECT_NAME}
   src/hobot_rtsp_client_node.cpp)
 
 
-target_link_libraries(${PROJECT_NAME}
-  ${LIVE_LIBRARIES}
+target_compile_definitions(${PROJECT_NAME}_component
+  PRIVATE "COMPOSITION_BUILDING_DLL")
+ament_target_dependencies(${PROJECT_NAME}_component
+  rclcpp
+  rclcpp_components
+  img_msgs
 )
 
-ament_target_dependencies(
-  ${PROJECT_NAME} 
+set(node_plugins "${node_plugins}hobot_rtsp_client::HobotRtspClientNode;$<TARGET_FILE:${PROJECT_NAME}_component>\n")
+
+rclcpp_components_register_node(${PROJECT_NAME}_component
+  PLUGIN "HobotRtspClientNode"
+  EXECUTABLE ${PROJECT_NAME}
+)
+
+
+ament_target_dependencies(${PROJECT_NAME}_component
   rclcpp
   img_msgs
 )
+
+target_link_libraries(${PROJECT_NAME}_component
+  ${LIVE_LIBRARIES}
+)
+
+#set(node_plugins "${node_plugins}hobot_rtsp_client::HobotRtspClientNode;$<TARGET_FILE:${PROJECT_NAME}_component>\n")
+
+#target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}_component)
 
 # Install libraries
 install(DIRECTORY ./deps/live555/lib/
@@ -91,6 +111,11 @@ DESTINATION lib/)
 
 install(TARGETS ${PROJECT_NAME}
   DESTINATION lib/${PROJECT_NAME})
+
+install(
+    TARGETS ${PROJECT_NAME}_component
+    RUNTIME DESTINATION lib/${PROJECT_NAME}
+  )
 
 install(DIRECTORY
   launch

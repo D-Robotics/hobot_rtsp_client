@@ -54,6 +54,7 @@ def generate_launch_description():
             #'codec_out_mode': 'ros',
             'codec_out_mode': 'shared_mem',
             'codec_out_format': 'nv12',
+            'codec_output_framerate': '10',
             #'codec_sub_topic': '/hbmem_img',
             'codec_sub_topic': '/rtsp_image_ch_0',
             'codec_pub_topic': '/image_decode'
@@ -73,6 +74,7 @@ def generate_launch_description():
             'codec_out_mode': 'ros',
             'codec_out_format': 'jpeg',
             'codec_jpg_quality': '85.0',
+            'codec_output_framerate': '-1',
             'codec_sub_topic': '/image_decode',
             'codec_pub_topic': '/image_mjpeg'
         }.items()

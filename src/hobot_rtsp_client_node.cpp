@@ -18,6 +18,7 @@
 #include <vector>
 
 #include "hobot_rtsp_client_node.hpp"
+#include "rclcpp_components/register_node_macro.hpp"
 
 namespace hobot_rtsp_client
 {
@@ -104,8 +105,9 @@ void HobotRtspClientNode::init()
   RCLCPP_INFO_STREAM(this->get_logger(), "RtspClientNode init");
 }
 
+
+RCLCPP_COMPONENTS_REGISTER_NODE(HobotRtspClientNode)
+
 }  // namespace usb_cam
 
 
-//#include "rclcpp_components/register_node_macro.hpp"
-//RCLCPP_COMPONENTS_REGISTER_NODE(usb_cam::HobotUsbCamNode)
