@@ -35,7 +35,7 @@ def generate_launch_description():
             description='framerate'),
         DeclareLaunchArgument(
             'hobot_transport_0',
-            default_value='tcp',
+            default_value='udp',
             description='rtsp data transport tcp/upd'),
 
         Node(
