@@ -26,6 +26,21 @@ from ament_index_python import get_package_share_directory
 def generate_launch_description():
     camera_node = None
 
+    rtsp_url_num_args = DeclareLaunchArgument(
+        'hobot_rtsp_url_num',
+        default_value='1',
+        description='rtsp device number')
+
+    rtsp_url_0_args = DeclareLaunchArgument(
+        'hobot_rtsp_url_0',
+        default_value='rtsp://admin:admin123@10.112.148.57:554/0',
+        description='framerate')
+
+    transport_0_args = DeclareLaunchArgument(
+        'hobot_transport_0',
+        default_value='udp',
+        description='rtsp data transport tcp/upd')
+
     print("using rtsp camera")
     # using rtsp cam publish image
 
@@ -35,9 +50,9 @@ def generate_launch_description():
                 get_package_share_directory('hobot_rtsp_client'),
                 'launch/hobot_rtsp_client.launch.py')),
         launch_arguments={
-            'hobot_rtsp_url_num': '1',
-            'hobot_rtsp_url_0': 'rtsp://admin:admin123@10.112.148.57:554/0',
-            'hobot_transport_0': 'tcp'
+            'hobot_rtsp_url_num': LaunchConfiguration('hobot_rtsp_url_num'),
+            'hobot_rtsp_url_0': LaunchConfiguration('hobot_rtsp_url_0'),
+            'hobot_transport_0': LaunchConfiguration('hobot_transport_0')
         }.items()
     )
 
@@ -82,6 +97,9 @@ def generate_launch_description():
                     get_package_share_directory('hobot_shm'),
                     'launch/hobot_shm.launch.py'))
         ),
+        rtsp_url_num_args,
+        rtsp_url_0_args,
+        transport_0_args,
         rtsp_node,
         h264_codec_node,
         mono2d_body_det_node,

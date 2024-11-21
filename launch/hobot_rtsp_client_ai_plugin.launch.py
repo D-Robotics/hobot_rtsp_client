@@ -78,12 +78,9 @@ def generate_launch_description():
                 plugin='HobotRtspClientNode',
                 name='rtsp_client_node',
                 parameters=[
-                    #{"rtsp_url_num": LaunchConfiguration('hobot_rtsp_url_num')},
-                    #{"rtsp_url_0": LaunchConfiguration('hobot_rtsp_url_0')},
-                    #{"transport_0": LaunchConfiguration('hobot_transport_0')}
-                    {"rtsp_url_num": 1},
-                    {"rtsp_url_0": 'rtsp://admin:admin123@10.112.148.57:554/0'},
-                    {"transport_0": 'udp'}
+                    {"rtsp_url_num": LaunchConfiguration('hobot_rtsp_url_num')},
+                    {"rtsp_url_0": LaunchConfiguration('hobot_rtsp_url_0')},
+                    {"transport_0": LaunchConfiguration('hobot_transport_0')}
                 ],
                 extra_arguments=[{'use_intra_process_comms': True}],
             ),

@@ -46,13 +46,12 @@ ros2 run hobot_rtsp_client hobot_rtsp_client --ros-args -p rtsp_url_num:=4 -p rt
 If the following information is output, it indicates that the node has been successfully launched:
 
 ```text
-[INFO] [launch]: All log files can be found below /root/.ros/log/2023-07-18-18-30-54-961749-ubuntu-16326
-[INFO] [launch]: Default logging verbosity is set to INFO
-[INFO] [hobot_usb_cam-1]: process started with pid [16328]
-[hobot_usb_cam-1] If you need calibration msg, please make sure the calibration file path is correct and the calibration file exists!
-[hobot_usb_cam-1] [WARN] [1689676255.349211776] [hobot_usb_cam]: get camera calibration parameters failed
-[hobot_usb_cam-1] [WARN] [1689676255.349432974] [hobot_usb_cam]: Start to open device /dev/video8.
-[hobot_usb_cam-1] [WARN] [1689676255.596271213] [hobot_usb_cam]: Open & Init device /dev/video8 success.
+[hobot_codec_republish-2] [WARN] [1732169402.355433988] [hobot_codec_decoder]: Sub imgRaw fps = -1774563328
+[hobot_codec_republish-2] [WARN] [1732169402.906547961] [hobot_codec_decoder]: sub h264 1920x1080, fps: 24.7706, pub nv12, fps: 9.17431, comm delay [-8.8148]ms, codec delay [171.2000]ms
+[mono2d_body_detection-4] [WARN] [1732169402.906916796] [mono2d_body_det]: SharedMemImgProcess Recved img encoding: nv12, h: 1080, w: 1920, step: 1920, index: 2508, stamp: 1732169402_735947000, data size: 3133440, comm delay [170.9541]ms
+[hobot_codec_republish-3] [WARN] [1732169403.274412126] [hobot_codec_encoder]: sub nv12 1920x1088, fps: 10.8055, pub jpeg, fps: 10.8055, comm delay [164.9091]ms, codec delay [7.6364]ms
+[mono2d_body_detection-4] [WARN] [1732169403.321086039] [mono2d_body_det]: input fps: 10.81, out fps: 10.81, infer time ms: 92, post process time ms: 10
+[hobot_codec_republish-2] [WARN] [1732169403.946849482] [hobot_codec_decoder]: sub h264 1920x1080, fps: 25, pub nv12, fps: 10.5769, comm delay [-7.0000]ms, codec delay [168.2727]ms
 ```
 ## View Effect
 
