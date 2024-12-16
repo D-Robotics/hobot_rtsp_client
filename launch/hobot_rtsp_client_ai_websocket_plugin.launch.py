@@ -50,6 +50,11 @@ def generate_launch_description():
         default_value='tros_container',
         description='the name of the container that launches all nodes')
 
+    websocket_channel_args = DeclareLaunchArgument(
+        'websocket_channel',
+        default_value='0',
+        description='websocket channel number')
+
     # web
     web_node = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -58,6 +63,7 @@ def generate_launch_description():
                 'launch/websocket.launch.py')),
         launch_arguments={
             'websocket_image_topic': '/image_mjpeg',
+            'websocket_channel': LaunchConfiguration('websocket_channel'),
             'websocket_smart_topic': "/hobot_mono2d_body_detection"
         }.items()
     )
@@ -157,5 +163,6 @@ def generate_launch_description():
         videobox_cmd_group,
         load_composable_nodes,
         #mono2d_body_det_node,
+        websocket_channel_args,
         web_node
     ])

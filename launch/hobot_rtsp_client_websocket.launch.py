@@ -41,6 +41,11 @@ def generate_launch_description():
         default_value='udp',
         description='rtsp data transport tcp/upd')
 
+    websocket_channel_args = DeclareLaunchArgument(
+        'websocket_channel',
+        default_value='0',
+        description='websocket channel number')
+
     print("using rtsp camera")
     # using rtsp cam publish image
 
@@ -102,6 +107,7 @@ def generate_launch_description():
                 'launch/websocket.launch.py')),
         launch_arguments={
             'websocket_image_topic': '/image_mjpeg',
+            'websocket_channel': LaunchConfiguration('websocket_channel'),
             'websocket_only_show_image': 'True'
         }.items()
     )
@@ -121,6 +127,7 @@ def generate_launch_description():
         rtsp_node,
         h264_codec_node,
         jpeg_codec_node,
+        websocket_channel_args,
         web_node
         # image codec
     ])

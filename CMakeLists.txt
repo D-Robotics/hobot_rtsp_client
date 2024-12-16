@@ -114,7 +114,7 @@ install(TARGETS ${PROJECT_NAME}
 
 install(
     TARGETS ${PROJECT_NAME}_component
-    RUNTIME DESTINATION lib/${PROJECT_NAME}
+    DESTINATION lib/
   )
 
 install(DIRECTORY
