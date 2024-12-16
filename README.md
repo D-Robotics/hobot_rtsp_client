@@ -57,6 +57,7 @@ If the following information is output, it indicates that the node has been succ
 
 Here, image visualization is implemented using a web-based approach. As the data being published is H264 or H265, it needs to be decoded into NV12, then encoded into JPEG images, and finally published through web service. Please refer to hobot_rtsp_client_websocket.launch.py
 
+### single channel
 tros humble:
 ```shell
 source /opt/tros/humble/setup.bash
@@ -67,6 +68,25 @@ ros2 launch hobot_rtsp_client hobot_rtsp_client_websocket.launch.py hobot_rtsp_u
 Open a browser (chrome/firefox/edge) on your PC and enter <http://IP:8000> (where IP is the RDK IP address), then click on the Web display in the top left corner to see the real-time image.
      ![web_rtsp](./image/web_rtsp.png "Real-time Image")
 
+### multi channel
+tros humble:
+```shell
+source /opt/tros/humble/setup.bash
+# Start launch
+export ROS_DOMAIN_ID=100
+ros2 launch hobot_rtsp_client hobot_rtsp_client_websocket.launch.py hobot_rtsp_url_num:=1 hobot_rtsp_url_0:='rtsp://127.0.0.1/1080P_test.h264' hobot_transport_0:='udp' websocket_channel:=0
+```
+
+other channel is running in other terminal
+```shell
+source /opt/tros/humble/setup.bash
+# Start launch
+export ROS_DOMAIN_ID=101
+ros2 launch hobot_rtsp_client hobot_rtsp_client_websocket.launch.py hobot_rtsp_url_num:=1 hobot_rtsp_url_0:='rtsp://127.0.0.1/1080P_test.h264' hobot_transport_0:='udp' websocket_channel:=1
+```
+
+Open a browser (chrome/firefox/edge) on your PC and enter <http://IP:8000> (where IP is the RDK IP address), then click on the Web display in the top left corner to see the real-time image.
+     ![web_rtsp](./image/web_rtsp_multi.jpg "Real-time Image")
 
 # API Description
 

@@ -69,7 +69,7 @@ ros2 run hobot_rtsp_client hobot_rtsp_client --ros-args -p rtsp_url_num:=4 -p rt
 
 这里采用web端方式实现图像可视化，由于发布的是h264或者h265数据，需要解码成NV12，再编码JPEG图像，最后通过webservice发布。请参考hobot_rtsp_client_websocket.launch.py
 
-#### tros humble 版本
+### 单路
 ```shell
 source /opt/tros/humble/setup.bash
 # 启动
@@ -78,6 +78,25 @@ ros2 launch hobot_rtsp_client hobot_rtsp_client_websocket.launch.py hobot_rtsp_u
 
 打开同一网络电脑的浏览器，访问IP地址（浏览器输入http://IP:8000，IP为地平线RDK IP地址），点击左上方`Web 展示端`即可看到RTSP输出的实时画面：
      ![web_rtsp](./image/web_rtsp.png "实时图像")
+
+### 多路
+```shell
+source /opt/tros/humble/setup.bash
+# 启动
+export ROS_DOMAIN_ID=100
+ros2 launch hobot_rtsp_client hobot_rtsp_client_websocket.launch.py hobot_rtsp_url_num:=1 hobot_rtsp_url_0:='rtsp://127.0.0.1/1080P_test.h264' hobot_transport_0:='udp'  websocket_channel:=0
+```
+
+另一个终端启动另一路
+```shell
+source /opt/tros/humble/setup.bash
+# 启动
+export ROS_DOMAIN_ID=101
+ros2 launch hobot_rtsp_client hobot_rtsp_client_websocket.launch.py hobot_rtsp_url_num:=1 hobot_rtsp_url_0:='rtsp://127.0.0.1/1080P_test.h264' hobot_transport_0:='udp'  websocket_channel:=1
+```
+
+打开同一网络电脑的浏览器，访问IP地址（浏览器输入http://IP:8000，IP为地平线RDK IP地址），点击左上方`Web 展示端`即可看到RTSP输出的实时画面：
+     ![web_rtsp](./image/web_rtsp_multi.jpg "实时图像")
 
 
 # 接口说明
