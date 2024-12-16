@@ -41,6 +41,11 @@ def generate_launch_description():
         default_value='udp',
         description='rtsp data transport tcp/upd')
 
+    websocket_channel_args = DeclareLaunchArgument(
+        'websocket_channel',
+        default_value='0',
+        description='websocket channel number')
+
     print("using rtsp camera")
     # using rtsp cam publish image
 
@@ -116,6 +121,7 @@ def generate_launch_description():
                 'launch/websocket.launch.py')),
         launch_arguments={
             'websocket_image_topic': '/image_mjpeg',
+            'websocket_channel': LaunchConfiguration('websocket_channel'),
             'websocket_smart_topic': "/hobot_mono2d_body_detection"
         }.items()
     )
@@ -136,6 +142,7 @@ def generate_launch_description():
         h264_codec_node,
         jpeg_codec_node,
         mono2d_body_det_node,
+        websocket_channel_args,
         web_node
         # image codec
     ])
