@@ -72,21 +72,8 @@ def generate_launch_description():
             'codec_output_framerate': '10',
             #'codec_sub_topic': '/hbmem_img',
             'codec_sub_topic': '/rtsp_image_ch_0',
-            'codec_pub_topic': '/image_decode'
+            'codec_pub_topic': '/hbmem_img'
         }.items()
-    )
-
-    # mono2d body detection
-    mono2d_body_det_node = Node(
-        package='mono2d_body_detection',
-        executable='mono2d_body_detection',
-        output='screen',
-        parameters=[
-            {"ai_msg_pub_topic_name": "/hobot_mono2d_body_detection"},
-            {"sharedmem_img_topic_name": "/image_decode"},
-            {"is_shared_mem_sub": 1}
-        ],
-        arguments=['--ros-args', '--log-level', 'warn']
     )
 
     return LaunchDescription([
@@ -97,10 +84,23 @@ def generate_launch_description():
                     get_package_share_directory('hobot_shm'),
                     'launch/hobot_shm.launch.py'))
         ),
+        # DNN节点
+        Node(
+            package='dnn_node_example',
+            executable='example',
+            output='screen',
+            parameters=[
+                {"config_file": 'config/fcosworkconfig.json'},
+                {"dump_render_img": 0},
+                {"feed_type": 1},
+                {"is_shared_mem_sub": 1},
+                {"msg_pub_topic_name": "/hobot_dnn_detection"}
+            ],
+            arguments=['--ros-args', '--log-level', 'warn']
+        ), 
         rtsp_url_num_args,
         rtsp_url_0_args,
         transport_0_args,
         rtsp_node,
         h264_codec_node,
-        mono2d_body_det_node,
     ])

@@ -99,24 +99,26 @@ def generate_launch_description():
                     {'out_mode': 'ros'},
                     {'output_framerate': 10},
                     {'out_format': 'nv12'},
-                    {'pub_topic': '/image_decode'}
+                    {'pub_topic': '/image'}
                 ],
                 extra_arguments=[{'use_intra_process_comms': True}],
             ),
 
             # 编码节点：畸变矫正后的左图编码成 jpeg 格式，用于可视化
             ComposableNode(
-                package='mono2d_body_detection',
-                plugin='Mono2dBodyDetNode',
-                name='mono_body',
+                package='dnn_node_example',
+                plugin='DnnExampleNode',
+                name='dnn_example',
                 parameters=[
-                    {"ai_msg_pub_topic_name": "/hobot_mono2d_body_detection"},
-                    #{"sharedmem_img_topic_name": "/image_decode"},
-                    {"ros_img_topic_name": "/image_decode"},
-                    {"is_shared_mem_sub": 0}
+                    {"config_file": 'config/fcosworkconfig.json'},
+                    {"dump_render_img": 0},
+                    {"feed_type": 1},
+                    {"is_shared_mem_sub": 0},
+                    {"msg_pub_topic_name": "/hobot_dnn_detection"}
+
                 ],
                 extra_arguments=[{'use_intra_process_comms': True}],
-            )
+            ) 
         ]
     )
 
