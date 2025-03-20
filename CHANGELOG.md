@@ -1,4 +1,8 @@
 # Changelog for package hobot_rtsp_client
+tros_1.0.2(2024-03-20)
+------------------
+1. 算法推理的node切换到dnn_node_example。
+
 
 tros_1.0.1(2024-12-16)
 ------------------

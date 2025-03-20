@@ -77,7 +77,7 @@ def generate_launch_description():
             'codec_output_framerate': '10',
             #'codec_sub_topic': '/hbmem_img',
             'codec_sub_topic': '/rtsp_image_ch_0',
-            'codec_pub_topic': '/image_decode'
+            'codec_pub_topic': '/hbmem_img'
         }.items()
     )
 
@@ -95,22 +95,9 @@ def generate_launch_description():
             'codec_out_format': 'jpeg',
             'codec_jpg_quality': '85.0',
             'codec_output_framerate': '-1',
-            'codec_sub_topic': '/image_decode',
+            'codec_sub_topic': '/hbmem_img',
             'codec_pub_topic': '/image_mjpeg'
         }.items()
-    )
-
-    # mono2d body detection
-    mono2d_body_det_node = Node(
-        package='mono2d_body_detection',
-        executable='mono2d_body_detection',
-        output='screen',
-        parameters=[
-            {"ai_msg_pub_topic_name": "/hobot_mono2d_body_detection"},
-            {"sharedmem_img_topic_name": "/image_decode"},
-            {"is_shared_mem_sub": 1}
-        ],
-        arguments=['--ros-args', '--log-level', 'warn']
     )
 
     # web
@@ -122,12 +109,12 @@ def generate_launch_description():
         launch_arguments={
             'websocket_image_topic': '/image_mjpeg',
             'websocket_channel': LaunchConfiguration('websocket_channel'),
-            'websocket_smart_topic': "/hobot_mono2d_body_detection"
+            'websocket_smart_topic': "/hobot_dnn_detection"
         }.items()
     )
 
 
-    return LaunchDescription([
+    return LaunchDescription([  
         # 启动零拷贝环境配置node
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
@@ -135,13 +122,26 @@ def generate_launch_description():
                     get_package_share_directory('hobot_shm'),
                     'launch/hobot_shm.launch.py'))
         ),
+        # DNN节点
+        Node(
+            package='dnn_node_example',
+            executable='example',
+            output='screen',
+            parameters=[
+                {"config_file": 'config/fcosworkconfig.json'},
+                {"dump_render_img": 0},
+                {"feed_type": 1},
+                {"is_shared_mem_sub": 1},
+                {"msg_pub_topic_name": "/hobot_dnn_detection"}
+            ],
+            arguments=['--ros-args', '--log-level', 'warn']
+        ),  
         rtsp_url_num_args,
         rtsp_url_0_args,
         transport_0_args,
         rtsp_node,
         h264_codec_node,
         jpeg_codec_node,
-        mono2d_body_det_node,
         websocket_channel_args,
         web_node
         # image codec
