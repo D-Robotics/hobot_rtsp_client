@@ -90,7 +90,7 @@ def generate_launch_description():
             executable='example',
             output='screen',
             parameters=[
-                {"config_file": 'config/fcosworkconfig.json'},
+                {"config_file": 'config/yolov8workconfig.json'},
                 {"dump_render_img": 0},
                 {"feed_type": 1},
                 {"is_shared_mem_sub": 1},
